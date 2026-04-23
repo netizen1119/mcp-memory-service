@@ -131,7 +131,6 @@ development_notes.md
 
 # Temporary MCP test files
 /tmp/test_mcp*.py
-test_mcp*.py
 debug_mcp*.py
 
 # Migration artifacts
