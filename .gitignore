@@ -225,4 +225,4 @@ results/benchmarks/
 
 # Local deployment config (fly.io)
 fly.toml
-Dockerfile
+Dockerfile*
