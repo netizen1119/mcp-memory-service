@@ -57,12 +57,21 @@ RUN python -m uv pip install \
     "tokenizers==0.20.3" \
     "build>=0.10.0" \
     "aiohttp>=3.8.0" \
+    "aiosqlite>=0.20.0" \
+    "apscheduler>=3.11.0" \
+    "authlib>=1.6.9" \
+    "cryptography>=46.0.6" \
     "fastapi>=0.115.0" \
+    "httpx>=0.24.0" \
     "uvicorn>=0.30.0" \
     "python-multipart>=0.0.9" \
+    "python-dotenv>=1.0.0" \
+    "PyJWT[crypto]>=2.12.0" \
     "sse-starlette>=2.1.0" \
     "aiofiles>=23.2.1" \
     "psutil>=5.9.0" \
+    "pypdf>=6.9.1" \
+    "requests>=2.32.4" \
     "zeroconf>=0.130.0" \
     "PyPDF2>=3.0.0" \
     "chardet>=5.0.0" \
@@ -72,14 +81,8 @@ RUN python -m uv pip install \
 # Conditionally pre-download ONNX embedding models
 RUN if [ "$SKIP_MODEL_DOWNLOAD" != "true" ]; then \
         echo "Pre-downloading ONNX embedding models..." && \
-        python -c "try:\
-            from mcp_memory_service.embeddings.onnx_embeddings import ONNXEmbeddingModel; \
-            print('Initializing ONNX embedding model...'); \
-            model = ONNXEmbeddingModel(); \
-            print('ONNX models cached successfully')\
-        except Exception as e:\
-            print(f'Warning: Could not pre-download ONNX models: {e}'); \
-            print('Models will be downloaded at runtime')" || echo "ONNX model download failed, continuing..."; \
+        python -c "from mcp_memory_service.embeddings.onnx_embeddings import ONNXEmbeddingModel; ONNXEmbeddingModel(); print('ONNX models cached')" \
+        || echo "ONNX pre-download failed, will retry at runtime"; \
     else \
         echo "Skipping ONNX model download (SKIP_MODEL_DOWNLOAD=true)"; \
     fi
