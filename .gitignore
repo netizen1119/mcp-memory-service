@@ -222,3 +222,7 @@ certs/key.pem
 # LoCoMo benchmark data (downloaded on demand)
 data/locomo/
 results/benchmarks/
+
+# Local deployment config (fly.io)
+fly.toml
+Dockerfile
