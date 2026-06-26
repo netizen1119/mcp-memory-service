@@ -24,7 +24,7 @@ import os
 from contextlib import asynccontextmanager
 from typing import Optional, Any
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -61,6 +61,7 @@ from .api.quality import router as quality_router
 from .api.server import router as server_router
 from .api.configuration import router as configuration_router
 from .api.oauth_status import router as oauth_status_router
+from .oauth.middleware import require_read_access, require_write_access
 from .api.conflicts import router as conflicts_router
 from .api.harvest import router as harvest_router
 from .sse import sse_manager
@@ -308,7 +309,7 @@ def create_app() -> FastAPI:
     app.include_router(quality_router, prefix="/api/quality", tags=["quality"])
     logger.info(f"✓ Included quality router with {len(quality_router.routes)} routes")
     try:
-        app.include_router(documents_router, prefix="/api/documents", tags=["documents"])
+        app.include_router(documents_router, prefix="/api/documents", tags=["documents"], dependencies=[Depends(require_read_access)])
         logger.info(f"✓ Included documents router with {len(documents_router.routes)} routes")
     except Exception as e:
         logger.error(f"✗ Failed to include documents router: {e}")
