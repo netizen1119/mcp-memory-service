@@ -140,6 +140,30 @@ MCP_TOOLS = [
             }
         }
     ),
+    MCPTool(
+        name="get_current_time",
+        description="Get the current time in a specified IANA timezone (e.g. 'Asia/Seoul', 'America/New_York', 'UTC').",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "timezone": {
+                    "type": "string",
+                    "description": "IANA timezone name (e.g. 'Asia/Seoul', 'UTC')."
+                }
+            },
+            "required": ["timezone"]
+        }
+    ),
+    MCPTool(
+        name="get_utc",
+        description="Get the current time in UTC.",
+        inputSchema={"type": "object", "properties": {}}
+    ),
+    MCPTool(
+        name="get_server_time",
+        description="Get the current local time on the server host.",
+        inputSchema={"type": "object", "properties": {}}
+    ),
 ]
 
 
@@ -391,6 +415,14 @@ async def handle_tool_call(storage, tool_name: str, arguments: Dict[str, Any]) -
             "total_found": len(memories)
         }
     
+    
+    elif tool_name in ("get_current_time", "get_utc", "get_server_time"):
+        from mcp_memory_service.tools import time_tools as _time_tools
+        handler = getattr(_time_tools, f"handle_{tool_name}")
+        text_contents = await handler(arguments)
+        return {
+            "text": text_contents[0].text if text_contents else ""
+        }
     
     else:
         raise ValueError(f"Unknown tool: {tool_name}")

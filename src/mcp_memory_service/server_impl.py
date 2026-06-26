@@ -2282,6 +2282,48 @@ Examples:
                 tools.extend(mistake_tools)
                 logger.info(f"Added {len(mistake_tools)} mistake note tools")
 
+                # Time utility tools (ported from mcp-simple-timeserver)
+                time_tools = [
+                    types.Tool(
+                        name="get_current_time",
+                        description="Get the current time in a specified IANA timezone (e.g. 'Asia/Seoul', 'America/New_York', 'UTC').",
+                        inputSchema={
+                            "type": "object",
+                            "properties": {
+                                "timezone": {
+                                    "type": "string",
+                                    "description": "IANA timezone name (e.g. 'Asia/Seoul', 'UTC')."
+                                }
+                            },
+                            "required": ["timezone"],
+                        },
+                        annotations=types.ToolAnnotations(
+                            title="Get Current Time",
+                            readOnlyHint=True,
+                        ),
+                    ),
+                    types.Tool(
+                        name="get_utc",
+                        description="Get the current time in UTC.",
+                        inputSchema={"type": "object", "properties": {}, "required": []},
+                        annotations=types.ToolAnnotations(
+                            title="Get UTC Time",
+                            readOnlyHint=True,
+                        ),
+                    ),
+                    types.Tool(
+                        name="get_server_time",
+                        description="Get the current local time on the server host.",
+                        inputSchema={"type": "object", "properties": {}, "required": []},
+                        annotations=types.ToolAnnotations(
+                            title="Get Server Time",
+                            readOnlyHint=True,
+                        ),
+                    ),
+                ]
+                tools.extend(time_tools)
+                logger.info(f"Added {len(time_tools)} time utility tools")
+
                 logger.info(f"Returning {len(tools)} tools")
                 return tools
             except Exception as e:
@@ -2356,6 +2398,12 @@ Examples:
                     logger.info("Calling handle_memory_resolve")
                     return await self.handle_memory_resolve(arguments)
 
+                elif name == "get_current_time":
+                    return await self.handle_get_current_time(arguments)
+                elif name == "get_utc":
+                    return await self.handle_get_utc(arguments)
+                elif name == "get_server_time":
+                    return await self.handle_get_server_time(arguments)
                 elif name == "mistake_note_add":
                     logger.info("Calling handle_mistake_note_add")
                     return await self.handle_mistake_note_add(arguments)
@@ -2446,6 +2494,25 @@ Examples:
                 logger.error(error_msg)
                 print(f"ERROR in tool execution: {error_msg}", file=sys.stderr, flush=True)
                 return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+
+    # ============================================================
+    # Time Utility Handlers (ported from mcp-simple-timeserver)
+    # ============================================================
+
+    async def handle_get_current_time(self, arguments: dict) -> List[types.TextContent]:
+        """Get current time in the requested IANA timezone (delegates to handler)."""
+        from .tools import time_tools
+        return await time_tools.handle_get_current_time(arguments)
+
+    async def handle_get_utc(self, arguments: dict) -> List[types.TextContent]:
+        """Get current UTC time (delegates to handler)."""
+        from .tools import time_tools
+        return await time_tools.handle_get_utc(arguments)
+
+    async def handle_get_server_time(self, arguments: dict) -> List[types.TextContent]:
+        """Get current local time on the server host (delegates to handler)."""
+        from .tools import time_tools
+        return await time_tools.handle_get_server_time(arguments)
 
     async def handle_store_memory(self, arguments: dict) -> List[types.TextContent]:
         """Store new memory (delegates to handler)."""

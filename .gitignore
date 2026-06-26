@@ -234,3 +234,7 @@ results/
 docs/statistics/charts/
 docs/statistics/data/
 docs/statistics/REPOSITORY_STATISTICS.md
+Dockerfile*
+
+fly.toml
+eff_large_wordlist.txt
