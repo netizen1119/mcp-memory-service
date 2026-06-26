@@ -8,7 +8,7 @@ to directly access memory operations using the MCP standard.
 import json
 import logging
 from typing import Dict, Any, Optional, Union
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
@@ -210,6 +210,11 @@ async def mcp_endpoint(
             return JSONResponse(content=response.model_dump(exclude_none=True))
 
         elif request.method == "tools/call":
+            # GHSA-2r68-g678-7qr3: tool execution requires write scope.
+            # read-only credentials may list tools (tools/list) but must not
+            # invoke them. require_scope raises HTTP 403 insufficient_scope.
+            user.require_scope("write")
+
             tool_name = request.params.get("name") if request.params else None
             arguments = request.params.get("arguments", {}) if request.params else {}
 
@@ -238,6 +243,11 @@ async def mcp_endpoint(
             )
             return JSONResponse(content=response.model_dump(exclude_none=True))
 
+    except HTTPException:
+        # Auth/scope failures (401/403) must propagate with their real HTTP
+        # status instead of being wrapped into a 200 JSON-RPC error envelope
+        # by the generic handler below.
+        raise
     except Exception as e:
         logger.error(f"MCP endpoint error: {e}")
         response = MCPResponse(
